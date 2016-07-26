@@ -3,7 +3,7 @@
 Constructs [KNX standard](https://en.wikipedia.org/wiki/KNX_(standard)) datagrams that make it easy to communicate with devices on KNX networks.
 It does not implement the transport layer so you can use it with naitive ruby, eventmachine, celluloid or the like.
 
-[![Build Status](https://travis-ci.org/cotag/ruby-knx.svg?branch=master)](https://travis-ci.org/cotag/ruby-knx)
+[![Build Status](https://travis-ci.org/acaprojects/ruby-knx.svg?branch=master)](https://travis-ci.org/acaprojects/ruby-knx)
 
 You'll need a gateway. I recommend one that supports TCP/IP such as [MDT Interfaces](http://www.mdt.de/EN_Interfaces.html) however you can use multicast groups if your network is configured to allow this.
 
