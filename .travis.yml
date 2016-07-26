@@ -6,7 +6,6 @@ rvm:
   - ruby-head
   - rbx-2
   - rbx
-  - jruby-19mode
   - jruby-9.0.5.0
   - jruby-head
 sudo: false
