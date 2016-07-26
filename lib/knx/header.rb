@@ -1,4 +1,5 @@
-#encoding: ASCII-8BIT
+# encoding: ASCII-8BIT
+# frozen_string_literal: true
 
 class KNX
     RequestTypes = {
@@ -17,7 +18,13 @@ class KNX
         tunnelling_request: 0x0420,
         tunnelling_ack: 0x0421,
         routing_indication: 0x0530,
-        routing_lost_message: 0x0531
+        routing_lost_message: 0x0531,
+
+        routing_busy: 0x0532,
+        remote_diagnostic_request: 0x0740,
+        remote_diagnostic_response: 0x0741,
+        remote_basic_config_request: 0x0742,
+        remote_reset_request: 0x0743
     }
 
     # http://www.openremote.org/display/forums/KNX+IP+Connection+Headers
@@ -25,7 +32,7 @@ class KNX
         endian :big
 
         uint8  :header_length,  value: 0x06  # Length 6 (always for version 1)
-        uint8  :version,        value: 0x10  # Version 1
+        uint8  :version
         uint16 :request_type
         uint16 :request_length
     end

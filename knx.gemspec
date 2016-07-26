@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |s|
     s.name        = "knx"
-    s.version     = '1.0.0'
+    s.version     = '1.0.1'
     s.authors     = ["Stephen von Takach"]
     s.email       = ["steve@cotag.me"]
     s.licenses    = ["MIT"]

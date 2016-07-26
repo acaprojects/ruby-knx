@@ -1,4 +1,5 @@
-#encoding: ASCII-8BIT
+# encoding: ASCII-8BIT
+# frozen_string_literal: true
 
 class KNX
     class ObjectServer
@@ -64,14 +65,15 @@ class KNX
 
             def to_binary_s
                 self.header.item_count = @data.length if @data.length > 0
-                resp = "#{self.connection.to_binary_s}#{self.header.to_binary_s}"
+                resp = String.new "#{self.connection.to_binary_s}#{self.header.to_binary_s}"
 
                 @data.each do |item|
                     resp << item.to_binary_s
                 end
 
                 self.knx_header.request_length = resp.length + 6
-                "#{self.knx_header.to_binary_s}#{resp}"
+                resp.prepend self.knx_header.to_binary_s
+                resp
             end
 
             def add_action(index, data: nil, **options)
@@ -86,7 +88,7 @@ class KNX
                     if data.is_a? String
                         req.value = data
                     else
-                        req.value = ''
+                        req.value = String.new
                         req.value << data
                     end
                 end

@@ -1,4 +1,5 @@
-#encoding: ASCII-8BIT
+# encoding: ASCII-8BIT
+# frozen_string_literal: true
 
 class KNX
     # APCI type
@@ -7,25 +8,81 @@ class KNX
         group_resp:  1,
         group_write: 2,
 
-        individual_write: 3,
-        individual_read:  4,
-        individual_resp:  5,
+        individual_write: 0x0C0,
+        individual_read:  0x100,
+        individual_resp:  0x140,
 
         adc_read: 6,
-        adc_resp: 7,
+        adc_resp: 0x1C0,
 
-        memory_read:  8,
-        memory_resp:  9,
-        memory_write: 10,
+        sys_net_param_read: 0x1C4,
+        sys_net_param_resp: 0x1C9,
+        sys_net_param_write: 0x1CA,
 
-        user_msg: 11,
+        memory_read:  0x020,
+        memory_resp:  0x024,
+        memory_write: 0x028,
 
-        descriptor_read: 12,
-        descriptor_resp: 13,
+        user_memory_read: 0x2C0,
+        user_memory_resp: 0x2C1,
+        user_memory_write: 0x2C2,
 
-        restart: 14,
-        escape:  15
+        user_manufacturer_info_read: 0x2C5,
+        user_manufacturer_info_resp: 0x2C6,
+
+        function_property_command: 0x2C7,
+        function_property_state_read: 0x2C8,
+        function_property_state_resp: 0x2C9,
+
+        device_descriptor_read: 0x300,
+        device_descriptor_resp: 0x340,
+
+        restart: 0x380,
+        escape: 0x3C0,  # Not sure about this one
+
+        authorize_request: 0x3D1,
+        authorize_resp: 0x3D2,
+
+        key_write: 0x3D3,
+        key_resp: 0x3D4,
+
+        property_value_read: 0x3D5,
+        property_value_resp: 0x3D6,
+        property_value_write: 0x3D7,
+
+        property_description_read: 0x3D8,
+        property_description_resp: 0x3D9,
+
+        network_param_read: 0x3DA,
+        network_param_resp: 0x3DB,
+
+        individual_serial_num_read:  0x3DC,
+        individual_serial_num_resp:  0x3DD,
+        individual_serial_num_write: 0x3DF,
+
+        domain_write: 0x3E0,
+        domain_read: 0x3E1,
+        domain_resp: 0x3E2,
+        domain_selective_read: 0x3E3,
+
+        network_param_write: 0x3E4,
+
+        link_read: 0x3E5,
+        link_resp: 0x3E6,
+        link_write: 0x3E7,
+
+        group_prop_value_read: 0x3E8,
+        group_prop_value_resp: 0x3E9,
+        group_prop_value_write: 0x3EA,
+        group_prop_value_info: 0x3EB,
+
+        domain_serial_num_read:  0x3EC,
+        domain_serial_num_resp:  0x3ED,
+        domain_serial_num_write: 0x3EE,
+
+        filesystem_info: 0x3F0
     }
+    ActionType.merge!(ActionType.invert)
 
     TpciType = {
         unnumbered_data: 0b00,
@@ -35,7 +92,29 @@ class KNX
     }
 
     MsgCode = {
-        send_datagram: 0x29
+        raw_request: 0x10,
+        data_request: 0x11,
+        poll_data_request: 0x13,
+        poll_data_connection: 0x25,
+        data_indicator: 0x29,
+        busmon_indicator: 0x2B,
+        raw_indicator: 0x2D,
+        data_connection: 0x2E,
+        raw_connection: 0x2F,
+        data_connection_request: 0x41,
+        data_individual_request: 0x4A,
+        data_connection_indicator: 0x89,
+        data_individual_indicator: 0x94,
+        reset_indicator: 0xF0,
+        reset_request: 0xF1,
+        propwrite_connection: 0xF5,
+        propwrite_request: 0xF6,
+        propinfo_indicator: 0xF7,
+        func_prop_com_request: 0xF8,
+        func_prop_stat_read_request: 0xF9,
+        func_prop_com_connection: 0xFA,
+        prop_read_connection: 0xFB,
+        prop_read_request: 0xFC
     }
 
     Priority = {
@@ -43,6 +122,20 @@ class KNX
         alarm: 1,
         high: 2,
         low: 3
+    }
+
+    ErrorCodes = {
+        0x00 => "Unspecified Error",
+        0x01 => "Out of range",
+        0x02 => "Out of maxrange",
+        0x03 => "Out of minrange",
+        0x04 => "Memory Error",
+        0x05 => "Read only",
+        0x06 => "Illegal command",
+        0x07 => "Void DP",
+        0x08 => "Type conflict",
+        0x09 => "Prop. Index range error",
+        0x0A => "Value temporarily not writeable"
     }
     
 
@@ -216,5 +309,35 @@ class KNX
         bit4 :tpci_seq_num # Sequence number when tpci is sequenced
         bit4 :apci # application protocol control information (What we trying to do: Read, write, respond etc)
         bit6 :data # Or the tail end of APCI depending on the message type
+
+
+        # Applies 2 byte APCI value where required
+        #
+        # @param val [Symbol, Fixnum, Integer] the value or symbol representing the APCI value
+        # @return [true, false] returns true if data is available for storage
+        def apply_apci(val, data = nil)
+            value = if val.is_a?(Symbol)
+                ActionType[val]
+            else
+                val
+            end
+
+            if value > 15
+                self.apci = (value >> 6) & 0b1111
+                self.data = value & 0b111111
+                false
+            else
+                self.apci = value
+                if data && data[0] && data[0] <= 0b111111
+                    self.data = data[0]
+                    true
+                else
+                    self.data = 0
+                    false
+                end
+            end
+        rescue => e
+            raise ArgumentError, "Bad apci value: #{data}"
+        end
     end
 end

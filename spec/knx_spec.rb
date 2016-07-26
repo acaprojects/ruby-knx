@@ -30,9 +30,14 @@ describe "knx protocol helper" do
 
     it "should generate byte action requests" do
         datagram = @knx.action('1/2/0', 20)
-        expect(datagram.to_binary_s).to eq("\x06\x10\x050\x00\x11)\x00\xBC\xE0\x00\x01\n\x00\x01\x00\x94")
+        expect(datagram.to_binary_s).to eq("\x06\x10\x05\x30\x00\x11\x29\x00\xBC\xE0\x00\x01\n\x00\x01\x00\x94")
 
         datagram = @knx.action('1/2/0', 240)
-        expect(datagram.to_binary_s).to eq("\x06\x10\x050\x00\x12)\x00\xBC\xE0\x00\x01\n\x00\x01\x00\x80\xF0")
+        expect(datagram.to_binary_s).to eq("\x06\x10\x05\x30\x00\x12\x29\x00\xBC\xE0\x00\x01\n\x00\x01\x00\x80\xF0")
+    end
+
+    it "should generate status requests" do
+        datagram = @knx.status('1/2/1')
+        expect(datagram.to_binary_s).to eq("\x06\x10\x05\x30\x00\x11\x29\x00\xBC\xE0\x00\x01\n\x01\x00\x00\x00")
     end
 end

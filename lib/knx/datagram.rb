@@ -1,27 +1,22 @@
-#encoding: ASCII-8BIT
+# encoding: ASCII-8BIT
+# frozen_string_literal: true
 
 class KNX
-    DatagramBuilder = Struct.new(:header, :cemi, :source_address, :destination_address, :data) do
+    DatagramBuilder = Struct.new(:header, :cemi, :source_address, :destination_address, :data, :action_type) do
 
         def to_binary_s
-            data_array = self.data
+            resp = if @cemi.apply_apci(self.action_type, self.data) && self.data
+                @cemi.data_length = self.data.length
 
-            resp = if present? data_array
-                @cemi.data_length = data_array.length
-
-                if data_array[0] <= 0b111111
-                    @cemi.data = data_array[0]
-                    if data_array.length > 1
-                        data_array[1..-1].pack('C')
-                    else
-                        String.new
-                    end
+                if self.data.length > 1
+                    self.data[1..-1].pack('C')
                 else
-                    @cemi.data = 0
-                    data_array.pack('C')
+                    String.new
                 end
+            elsif present?(self.data)
+                @cemi.data_length = self.data.length
+                self.data.pack('C')
             else
-                @cemi.data = 0
                 @cemi.data_length = 0
                 String.new
             end
@@ -59,6 +54,7 @@ class KNX
             @cemi.hop_count = options[:hop_count]
 
             @header = Header.new
+            @header.version = 0x10
             if options[:request_type]
                 @header.request_type = RequestTypes[options[:request_type]]
             else
@@ -93,15 +89,11 @@ class KNX
             super(address, options)
 
             # Set the protocol control information
-            @cemi.apci = @address.is_group? ? ActionType[:group_write] : ActionType[:individual_write]
+            self.action_type = @address.is_group? ? :group_write : :individual_write
+            @cemi.apply_apci(self.action_type, data_array)
             @cemi.tpci = TpciType[:unnumbered_data]
 
-            # To attempt save a byte we try to cram the first byte into the APCI field
             if present? data_array
-                if data_array[0] <= 0b111111
-                    @cemi.data = data_array[0]
-                end
-                
                 @cemi.data_length = data_array.length
                 self.data = data_array
             end
@@ -113,7 +105,8 @@ class KNX
             super(address, options)
 
             # Set the protocol control information
-            @cemi.apci = @address.is_group? ? ActionType[:group_read] : ActionType[:individual_read]
+            self.action_type = @address.is_group? ? :group_read : :individual_read
+            @cemi.apply_apci(self.action_type)
             @cemi.tpci = TpciType[:unnumbered_data]
         end
     end
@@ -134,6 +127,10 @@ class KNX
             self.data = raw_data[17..(@header.request_length - 1)].bytes
             if @cemi.data_length > self.data.length
                 self.data.unshift @cemi.data
+                self.action_type = ActionType[@cemi.apci]
+            else
+                acpi = @cemi.data | (@cemi.apci << 6)
+                self.action_type = ActionType[acpi] || ActionType[@cemi.apci]
             end
 
             self.source_address = IndividualAddress.parse(@cemi.source_address.to_i)

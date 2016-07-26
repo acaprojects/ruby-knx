@@ -1,4 +1,5 @@
-#encoding: ASCII-8BIT
+# encoding: ASCII-8BIT
+# frozen_string_literal: true
 
 require 'bindata'
 
@@ -14,7 +15,7 @@ class KNX
         no_repeat: true,
         broadcast: true,
         hop_count: 6,
-        msg_code: :send_datagram
+        msg_code: :data_indicator
     }
 
     def initialize(options = {})
