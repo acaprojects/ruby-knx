@@ -1,7 +1,7 @@
 # Ruby KNX
 
 Constructs [KNX standard](https://en.wikipedia.org/wiki/KNX_(standard)) datagrams that make it easy to communicate with devices on KNX networks.
-It does not implement the transport layer so you can use it with naitive ruby, eventmachine, celluloid or the like.
+It does not implement the transport layer so you can use it with native ruby, eventmachine, celluloid or the like.
 
 [![Build Status](https://travis-ci.org/acaprojects/ruby-knx.svg?branch=master)](https://travis-ci.org/acaprojects/ruby-knx)
 
