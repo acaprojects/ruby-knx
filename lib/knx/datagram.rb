@@ -1,5 +1,4 @@
-# encoding: ASCII-8BIT
-# frozen_string_literal: true
+# frozen_string_literal: true, encoding: ASCII-8BIT
 
 class KNX
     DatagramBuilder = Struct.new(:header, :cemi, :source_address, :destination_address, :data, :action_type) do
