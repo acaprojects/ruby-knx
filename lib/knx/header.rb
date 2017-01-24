@@ -61,7 +61,7 @@ class KNX
 
             # https://en.wikipedia.org/wiki/CBC-MAC (always 128bit (16bytes) in KNX)
             # Timestamp + Serial Number + Tag + frame length (2 bytes)
-            string :cbc_mac, length: 16
+            string :cmac, length: 16
         end
 
         struct :timer, onlyif: -> { request_type == RequestTypes[:secure_timer_notify] } do
@@ -70,7 +70,7 @@ class KNX
             uint16 :message_tag         # Random number
 
             # Timestamp + Serial Number + Tag + frame length (2 bytes) == 0x0000
-            string :cbc_mac, length: 16
+            string :cmac, length: 16
         end
     end
 end

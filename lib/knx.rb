@@ -63,23 +63,27 @@ class KNX
     # @return [ResponseDatagram] a ruby object representing the data
     def read(data, options = {})
         # Check for an encrpyted packet
-        if raw_data[2] == "\x09"
+        if data[2] == "\x09"
             header = Header.new
             header.read(data)
             if header.request_type == RequestTypes[:secure_wrapper]
 
-                # Init the AES encryption
-                ccm = OpenSSL::CCM.new('AES', options[:key], 16)
-
                 # Was easier to just grab the raw string data
                 nonce = data[8..23] # Timestamp + Serial Number + Tag
                 mac_nonce = nonce + [header.wrapper.encrypted_frame.length].pack('n')
-                enc_nonce = nonce + "\x01" # with a counter also appended
 
-                # Extract the plain text datagram
-                plaintext = ccm.decrypt(header.wrapper.encrypted_frame, enc_nonce)
+                cmac = CMAC.new(options[:key])
+                if cmac.valid_message?(header.wrapper.cmac, message)
+                    # Init the AES encryption
+                    ccm = OpenSSL::CCM.new('AES', options[:key], 16)
+                    enc_nonce = nonce + "\x01" # with a counter also appended
 
-                ResponseDatagram.new(plaintext, @options.merge(options))
+                    # Extract the plain text datagram
+                    plaintext = ccm.decrypt(header.wrapper.encrypted_frame, enc_nonce)
+                    ResponseDatagram.new(plaintext, @options.merge(options))
+                else
+                    raise 'KNX message failed security checks'
+                end
             end
         else
             ResponseDatagram.new(data, @options.merge(options))

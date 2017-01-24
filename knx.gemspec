@@ -15,6 +15,7 @@ Gem::Specification.new do |s|
 
     s.add_dependency 'bindata', '~> 2.3'
     s.add_dependency 'openssl-ccm', '~> 1.2'
+    s.add_dependency 'cmac', '~> 0'
 
     s.add_development_dependency 'rspec', '~> 3.5'
     s.add_development_dependency 'yard',  '~> 0'
