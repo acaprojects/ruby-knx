@@ -1,6 +1,7 @@
 # frozen_string_literal: true, encoding: ASCII-8BIT
 
 require 'bindata'
+require 'openssl-ccm'
 
 require 'knx/header'
 require 'knx/cemi'
@@ -61,6 +62,27 @@ class KNX
     # @param data [String] a binary string containing the datagram
     # @return [ResponseDatagram] a ruby object representing the data
     def read(data, options = {})
-        ResponseDatagram.new(data, @options.merge(options))
+        # Check for an encrpyted packet
+        if raw_data[2] == "\x09"
+            header = Header.new
+            header.read(data)
+            if header.request_type == RequestTypes[:secure_wrapper]
+
+                # Init the AES encryption
+                ccm = OpenSSL::CCM.new('AES', options[:key], 16)
+
+                # Was easier to just grab the raw string data
+                nonce = data[8..23] # Timestamp + Serial Number + Tag
+                mac_nonce = nonce + [header.wrapper.encrypted_frame.length].pack('n')
+                enc_nonce = nonce + "\x01" # with a counter also appended
+
+                # Extract the plain text datagram
+                plaintext = ccm.decrypt(header.wrapper.encrypted_frame, enc_nonce)
+
+                ResponseDatagram.new(plaintext, @options.merge(options))
+            end
+        else
+            ResponseDatagram.new(data, @options.merge(options))
+        end
     end
 end
