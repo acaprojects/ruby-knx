@@ -1,7 +1,7 @@
 # frozen_string_literal: true, encoding: ASCII-8BIT
 
 require 'bindata'
-require 'openssl-ccm'
+require 'openssl/ccm'
 
 require 'knx/header'
 require 'knx/cemi'
