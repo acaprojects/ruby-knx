@@ -23,8 +23,8 @@ class KNX
 
         # Builds an Object Server command datagram for setting an index to a value
         #
-        # @param index [Integer, Fixnum] the object address or index as defined in the object server
-        # @param data [String, Integer, Fixnum, Array<Integer, Fixnum>] the value to be set at the address
+        # @param index [Integer] the object address or index as defined in the object server
+        # @param data [String, Integer, Array<Integer>] the value to be set at the address
         # @return [Datagram] a ruby object representing the request that can be modified further
         def action(index, data = nil, **options)
             options = @options.merge(options)
@@ -38,7 +38,7 @@ class KNX
 
         # Builds an Object Server request datagram for querying an index value
         #
-        # @param index [Integer, Fixnum] the object address or index as defined in the object server
+        # @param index [Integer] the object address or index as defined in the object server
         # @return [Datagram] a ruby object representing the request that can be modified further
         def status(index, options = {})
             options = @options.merge(options)

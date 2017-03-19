@@ -39,13 +39,13 @@ class KNX
         module ClassMethods
             def parse(input)
                 address = @address_class.new
-                klass = input.class
 
-                if klass == Array
+                case input
+                when Array
                     address.read(input.pack('n'))
-                elsif [Integer, Fixnum].include? klass
+                when Integer
                     address.read([input].pack('n'))
-                elsif klass == String
+                when String
                     tmp = parse_friendly(input)
                     if tmp.nil?
                         address.read(input)

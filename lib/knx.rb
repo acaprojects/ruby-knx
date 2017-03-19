@@ -25,21 +25,20 @@ class KNX
     # Builds a KNX command datagram for setting an address to a value
     #
     # @param address [String] the object address in group or individual format
-    # @param data [String, Integer, Fixnum, Array<Integer, Fixnum>] the value to be set at the address
+    # @param data [String, Integer, Array<Integer>] the value to be set at the address
     # @return [ActionDatagram] a ruby object representing the request that can be modified further
     def action(address, data, options = {})
         if data == true || data == false
             data = data ? 1 : 0
         end
 
-        klass = data.class
-
-        raw = if klass == String
+        raw = case data
+        when String
             data.bytes
-        elsif [Integer, Fixnum].include? klass
+        when Integer
             # Assume this is a byte
             [data]
-        elsif klass == Array
+        when Array
             # We assume this is a byte array
             data
         else

@@ -312,7 +312,7 @@ class KNX
 
         # Applies 2 byte APCI value where required
         #
-        # @param val [Symbol, Fixnum, Integer] the value or symbol representing the APCI value
+        # @param val [Symbol, Integer] the value or symbol representing the APCI value
         # @return [true, false] returns true if data is available for storage
         def apply_apci(val, data = nil)
             value = if val.is_a?(Symbol)
