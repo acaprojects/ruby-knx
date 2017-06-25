@@ -7,6 +7,7 @@ require 'knx/header'
 require 'knx/cemi'
 require 'knx/address'
 require 'knx/datagram'
+require 'knx/datapoints'
 
 
 class KNX
@@ -41,6 +42,8 @@ class KNX
         when Array
             # We assume this is a byte array
             data
+        when Datapoint
+            data.to_datapoint
         else
             raise ArgumentError, "Unknown data type for #{data}"
         end
