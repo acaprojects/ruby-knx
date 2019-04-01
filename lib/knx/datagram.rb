@@ -8,13 +8,13 @@ class KNX
                 @cemi.data_length = self.data.length
 
                 if self.data.length > 1
-                    self.data[1..-1].pack('C')
+                    self.data[1..-1].pack('C*')
                 else
                     String.new
                 end
             elsif present?(self.data)
                 @cemi.data_length = self.data.length
-                self.data.pack('C')
+                self.data.pack('C*')
             else
                 @cemi.data_length = 0
                 String.new
